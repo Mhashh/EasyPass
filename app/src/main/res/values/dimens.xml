@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="item_height">150dp</dimen>
+    <dimen name="font_brand">20sp</dimen>
+    <dimen name="font_acc">20sp</dimen>
+    <dimen name="p_text">5sp</dimen>
+    <dimen name="font_password">25sp</dimen>
+    <dimen name="width_brand">200dp</dimen>
+    <dimen name="width_account">200dp</dimen>
+    <dimen name="height_brand">40dp</dimen>
+    <dimen name="height_account">40dp</dimen>
+    <dimen name="width_password">320dp</dimen>
+    <dimen name="height_password">50dp</dimen>
+    <dimen name="item_margin">20dp</dimen>
+</resources>
