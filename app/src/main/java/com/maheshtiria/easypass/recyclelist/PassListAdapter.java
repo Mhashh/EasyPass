@@ -11,9 +11,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.maheshtiria.easypass.R;
 import com.maheshtiria.easypass.database.Pass;
 
+import java.util.List;
+
 public class PassListAdapter extends RecyclerView.Adapter<PassListAdapter.ViewHolder> {
 
-    private Pass[] passes;
+    private List<Pass> passes;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -44,7 +46,7 @@ public class PassListAdapter extends RecyclerView.Adapter<PassListAdapter.ViewHo
      * @param dataSet String[] containing the data to populate views to be used
      * by RecyclerView
      */
-    public PassListAdapter(Pass[] dataSet) {
+    public PassListAdapter(List<Pass> dataSet) {
         passes = dataSet;
     }
 
@@ -64,13 +66,15 @@ public class PassListAdapter extends RecyclerView.Adapter<PassListAdapter.ViewHo
         Log.d("OKAY","onBindViewHolder "+viewHolder.toString()+" "+position);
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.setValues(passes[position]);
+        viewHolder.setValues(passes.get(position));
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return passes.length;
+        if(passes!=null)
+            return passes.size();
+        return 0;
     }
 }
 

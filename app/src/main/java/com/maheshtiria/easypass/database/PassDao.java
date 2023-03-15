@@ -1,28 +1,30 @@
 package com.maheshtiria.easypass.database;
 
+import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
 import java.util.List;
 
+@Dao
 public interface PassDao {
     @Query("SELECT * FROM pass")
-    List<Pass> getAll();
+    List<Pass> getAll() throws Exception;
 
     @Query("SELECT * FROM pass WHERE accname IN (:accNames)")
-    List<Pass> loadAllByIds(String[] accNames);
+    List<Pass> loadAllByIds(String[] accNames) throws Exception;
 
     @Query("SELECT * FROM pass WHERE accname = :name")
-    Pass findByAccName(String name);
+    Pass findByAccName(String name) throws Exception;
 
     @Insert
-    void insert(Pass onepass);
+    void insert(Pass onepass) throws Exception;
 
     @Query("UPDATE pass SET pass = :newpass WHERE accname = :name")
-    void update(String name,String newpass);
+    void update(String name,String newpass) throws Exception;
 
     @Delete
-    void delete(Pass passes);
+    void delete(Pass passes) throws Exception;
 
 }

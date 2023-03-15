@@ -1,38 +1,31 @@
 package com.maheshtiria.easypass;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import android.os.Bundle;
-import android.util.Log;
+import android.view.MenuItem;
 
-import com.maheshtiria.easypass.database.Pass;
-import com.maheshtiria.easypass.recyclelist.PassListAdapter;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationBarView;
+import com.maheshtiria.easypass.database.Pdb;
 
 public class MainActivity extends AppCompatActivity {
-
+    String current="Add New";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Pass[] list = new Pass[6];
-        list[0] = new Pass("a","b","c");
-        list[1] = new Pass("r","b","c");
-        list[2] = new Pass("y","b","c");
-        list[3] = new Pass("w","b","c");
-        list[4] = new Pass("x","b","c");
-        list[5] = new Pass("x","b","c");
-        PassListAdapter pl = new PassListAdapter(list);
-
-        LinearLayoutManager llm = new LinearLayoutManager(this, RecyclerView.VERTICAL,false);
-        RecyclerView rv = findViewById(R.id.rcview);
-        rv.setLayoutManager(llm);
-        rv.setItemAnimator(new DefaultItemAnimator());
-        rv.setAdapter(pl);
-        Log.d("OKAY","listss");
+        NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+        NavController navController = navHostFragment.getNavController();
+        BottomNavigationView bv = (BottomNavigationView)findViewById(R.id.nav_bar);
+        NavigationUI.setupWithNavController(bv,navController);
 
     }
 }

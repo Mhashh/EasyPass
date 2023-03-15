@@ -12,4 +12,6 @@
     <dimen name="width_password">320dp</dimen>
     <dimen name="height_password">50dp</dimen>
     <dimen name="item_margin">20dp</dimen>
+    <dimen name="height_bottom_bar">70dp</dimen>
+    <dimen name="height_input">60dp</dimen>
 </resources>
