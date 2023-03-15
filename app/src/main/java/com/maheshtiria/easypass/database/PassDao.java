@@ -1,5 +1,6 @@
 package com.maheshtiria.easypass.database;
 
+import androidx.lifecycle.LiveData;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
@@ -10,7 +11,7 @@ import java.util.List;
 @Dao
 public interface PassDao {
     @Query("SELECT * FROM pass")
-    List<Pass> getAll() throws Exception;
+    LiveData<List<Pass>> getAll() throws Exception;
 
     @Query("SELECT * FROM pass WHERE accname IN (:accNames)")
     List<Pass> loadAllByIds(String[] accNames) throws Exception;
