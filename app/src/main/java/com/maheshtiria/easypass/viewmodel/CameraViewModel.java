@@ -7,6 +7,6 @@ import com.maheshtiria.easypass.database.Pass;
 
 import java.util.List;
 
-public class PassViewModel extends ViewModel {
+public class CameraViewModel extends ViewModel {
    LiveData<List<Pass>> data;
 }

@@ -116,8 +116,8 @@ public class AddNewFragment extends Fragment {
     private void addNewRecord(){
 
         String acc = inp1.getText().toString();
-        String apw = inp1.getText().toString();
-        String pass = inp1.getText().toString();
+        String apw = inp2.getText().toString();
+        String pass = inp3.getText().toString();
         acc = acc.trim();
         apw = apw.trim();
         pass = pass.trim();
