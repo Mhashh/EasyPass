@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.maheshtiria.easypass"
-        minSdk 27
+        minSdk 30
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -90,7 +90,7 @@ dependencies {
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
     //text recognization ml heavy stuff
-    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.2'
+    implementation 'com.google.mlkit:text-recognition:16.0.0'
 
 
 

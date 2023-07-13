@@ -8,57 +8,51 @@ import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.core.UseCaseGroup;
-import androidx.camera.core.VideoCapture;
 import androidx.camera.core.ViewPort;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.video.Recording;
 import androidx.camera.view.PreviewView;
-import androidx.camera.view.transform.OutputTransform;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.graphics.RectF;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Rational;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+import android.util.Size;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AbsListView;
+import android.view.WindowMetrics;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCanceledListener;
-import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
+import com.google.android.odml.image.MlImage;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
-import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
+import com.maheshtiria.easypass.recognizer.TextDetection;
+import com.maheshtiria.easypass.viewmodel.CameraViewModel;
 
+import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -66,43 +60,59 @@ public class CameraTextActivity extends AppCompatActivity {
 
     private ExecutorService cameraExecutor;
     private PreviewView cameraDisplay;
-    private SurfaceView surfaceView;
+    private View surfaceView;
     private TextView tv;
     private Button button;
+    private Button click;
+    private CameraViewModel viewModel;
     private int cropWidth=200;
     private int cropHeight = 100;
     static final int CAMERA_REQUEST = 0;
-
-    private final double RATIO_4_3_VALUE = 4.0 / 3.0;
-    private final double RATIO_16_9_VALUE = 16.0 / 9.0;
-
-
+    private double RATIO_4_3_VALUE = (4.0/3.0);
+    private double RATIO_16_9_VALUE = (16.0/9.0);
+    private DisplayMetrics displayMetrics;
+    private int crop_height_percent = 40;
     private StringBuilder msgb = new StringBuilder();
+
+    private TextRecognizer detector = TextDetection.detector;
+    private int width=0;
+    private int height=60;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //view init
         setContentView(R.layout.activity_camera_text);
         cameraDisplay = findViewById(R.id.viewFinder);
         button = findViewById(R.id.goBack);
         surfaceView = findViewById(R.id.scanner_view);
         tv = findViewById(R.id.current_text);
+        click = findViewById(R.id.click);
+        //view init
         msgb.append(" ");
+        Log.d("OKAY","onCreated");
 
-        DisplayMetrics displayMetrics = this.getResources().getDisplayMetrics();
+        viewModel = new ViewModelProvider(this).get(CameraViewModel.class);
+        viewModel.init();
+        viewModel.scan.observe(this,it->{
+            tv.setText(it);
+        });
 
-        cropWidth = (int)((displayMetrics.widthPixels/displayMetrics.xdpi)*displayMetrics.densityDpi);
-        cropWidth = (cropWidth*80)/100;
+        //screen height width
+        initDisplayMetrics();
+        Rect rect = getWindowManager().getCurrentWindowMetrics().getBounds();
+        width = displayMetrics.widthPixels;
 
-        cropHeight = (int)((displayMetrics.heightPixels/displayMetrics.ydpi)*displayMetrics.densityDpi);
-        cropHeight = (cropHeight*8)/100;
-        surfaceView.getLayoutParams().height=cropHeight;
-        surfaceView.getLayoutParams().width=cropWidth;
+        height= (int)((float)height*displayMetrics.density);
+        Log.d("VALUES","width : "+width+" window width : "+rect.width());
+        Log.d("VALUES","height : "+height+" window height : "+rect.height());
+        cameraDisplay.setScaleType(PreviewView.ScaleType.FIT_CENTER);
+        getSupportActionBar().hide();
+
         // Request camera permissions
-        if (allPermissionsGranted()) {
-            startCamera();
-        } else {
-            String requiredPermissions[] = new String[1];
+        if (!allPermissionsGranted()) {
+            String requiredPermissions[] = new String[2];
             requiredPermissions[0] = Manifest.permission.CAMERA;
+            requiredPermissions[1] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
             ActivityCompat.requestPermissions(
                     this,requiredPermissions , CameraTextActivity.CAMERA_REQUEST);
 
@@ -115,15 +125,28 @@ public class CameraTextActivity extends AppCompatActivity {
 
             finish();
         });
+
+
         cameraExecutor = Executors.newSingleThreadExecutor();
 
 
     }
 
+    @Override
+    @OptIn(markerClass = ExperimentalGetImage.class)
+    protected void  onStart() {
+        super.onStart();
+        startCamera();
+    }
+
+    @SuppressLint("RestrictedApi")
+    @ExperimentalGetImage
     private void startCamera() {
         //camera event
+        Log.d("OKAY","start camera ");
         ListenableFuture cameraProviderFuture = ProcessCameraProvider.getInstance(this);
-        Log.d("OKAY","W : "+surfaceView.getWidth()+" H:"+surfaceView.getHeight());
+
+        
 
         cameraProviderFuture.addListener(()->{
             // Used to bind the lifecycle of cameras to the lifecycle owner
@@ -132,28 +155,73 @@ public class CameraTextActivity extends AppCompatActivity {
                 processCameraProvider =   (ProcessCameraProvider) cameraProviderFuture.get();
 
 
+
+                CameraSelector cameraSelector = new CameraSelector.Builder()
+                        .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                        .build();
+
                 //display screen initialization if you want to use the whole screen
                 Preview preview = new Preview.Builder()
-                        .setTargetRotation(Surface.ROTATION_0)
                         .build();
                 preview.setSurfaceProvider(cameraDisplay.getSurfaceProvider());
 
+                //viewport image of concern
+                ViewPort viewPort =  new ViewPort.Builder(new Rational(width, height),preview.getTargetRotation()).build();
+                ImageCapture imageCapture =
+                        new ImageCapture.Builder()
+                                .setTargetRotation(preview.getTargetRotation())
+                                .build();
 
-                CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
-                Log.d("OKAY","w:"+cropWidth+" h:"+cropHeight);
-                //Building image analyzer
-                ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build();
-                imageAnalysis.setAnalyzer(cameraExecutor,new ImageFromText());
+                click.setOnClickListener((view)->{
 
+                    Log.d("VALUES","height : "+surfaceView.getWidth()+"   "+surfaceView.getHeight());
 
+                    imageCapture.takePicture(cameraExecutor,
+                            new ImageCapture.OnImageCapturedCallback(){
+                                @Override
+                                public void onCaptureSuccess(@NonNull ImageProxy image) {
+                                    Log.d("VALUES","height : "+image.getWidth()+"   "+image.getHeight()+"   "+image.getCropRect().left+"   "+image.getCropRect().right);
 
-                drawOverlay(surfaceView.getHolder(),80,8);
+                                    InputImage img = InputImage.fromMediaImage(image.getImage(),image.getImageInfo().getRotationDegrees());
+
+                                    Task<Text> result = detector.process(img)
+                                            .addOnSuccessListener(
+                                            new OnSuccessListener<Text>() {
+                                                @Override
+                                                public void onSuccess(Text text) {
+                                                    String value = text.getText();
+                                                    Log.d("VALUES","SCAN : "+value);
+                                                    msgb.delete(0,msgb.length());
+                                                    msgb.append(value);
+
+                                                    tv.setText(value);
+                                                }
+                                            }
+                                            ).addOnFailureListener(
+                                                    new OnFailureListener() {
+                                                        @Override
+                                                        public void onFailure(@NonNull Exception e) {
+
+                                                        }
+                                                    }
+                                            );
+                                }
+                            }
+                    );
+
+                });
+
+                UseCaseGroup useCaseGroup = new UseCaseGroup.Builder()
+                        .addUseCase(preview)
+                        .addUseCase(imageCapture)
+                        .setViewPort(viewPort)
+                        .build();
+
                 try{
                     processCameraProvider.unbindAll();
                     // Bind use cases to camera
-                    processCameraProvider.bindToLifecycle(
-                            this, cameraSelector,preview,imageAnalysis);
+                    processCameraProvider.bindToLifecycle(this,cameraSelector,useCaseGroup);
+
                 }catch (Exception e){
                     Log.d("OKAY",e.getMessage());
                     Toast.makeText(this,"Unable to use camera",Toast.LENGTH_LONG).show();
@@ -174,22 +242,18 @@ public class CameraTextActivity extends AppCompatActivity {
     private boolean allPermissionsGranted() {
         Boolean granted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
                 PackageManager.PERMISSION_GRANTED;
+        granted = granted && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+                PackageManager.PERMISSION_GRANTED;
         return granted;
     }
-    private int aspectRatio(int width,int height){
-        double previewRatio = Math.log((double) Math.max(width, height) / (double)Math.min(width, height));
-        if (Math.abs(previewRatio - Math.log(RATIO_4_3_VALUE))
-                <= Math.abs(previewRatio - Math.log(RATIO_16_9_VALUE))
-        ) {
-            return AspectRatio.RATIO_4_3;
-        }
-        return AspectRatio.RATIO_16_9;
 
+    private void initDisplayMetrics() {
+        displayMetrics = this.getResources().getDisplayMetrics();
     }
 
-
     @Override
-    public void onRequestPermissionsResult(int requestCode,String[] permissions,int[] grantResults) {
+    @OptIn(markerClass = ExperimentalGetImage.class)
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
@@ -215,91 +279,6 @@ public class CameraTextActivity extends AppCompatActivity {
         cameraExecutor.shutdown();
     }
 
-    private void drawOverlay(
-            SurfaceHolder holder,
-            int heightCropPercent,
-            int widthCropPercent
-    ) {
-        Canvas canvas = holder.lockCanvas();
-        Paint bgPaint = new Paint();
-        bgPaint.setAlpha(140);
 
-        canvas.drawPaint(bgPaint);
-        Paint rectPaint = new Paint();
-        rectPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-        rectPaint.setStyle(Paint.Style.FILL);
-        rectPaint.setColor(Color.WHITE);
-
-        Paint outlinePaint = new Paint();
-        outlinePaint.setStyle(Paint.Style.STROKE);
-        outlinePaint.setColor(Color.WHITE);
-        outlinePaint.setStrokeWidth(4f);
-
-        int surfaceWidth = holder.getSurfaceFrame().width();
-        int surfaceHeight = holder.getSurfaceFrame().height();
-
-        float cornerRadius = 25f;
-        // Set rect centered in frame
-        float rectTop = surfaceHeight * heightCropPercent / 2 / 100f;
-        float rectLeft = surfaceWidth * widthCropPercent / 2 / 100f;
-        float rectRight = surfaceWidth * (1 - widthCropPercent / 2 / 100f);
-        float rectBottom = surfaceHeight * (1 - heightCropPercent / 2 / 100f);
-        RectF rect = new RectF(rectLeft, rectTop, rectRight, rectBottom);
-        canvas.drawRoundRect(
-                rect, cornerRadius, cornerRadius, rectPaint
-        );
-        canvas.drawRoundRect(
-                rect, cornerRadius, cornerRadius, outlinePaint
-        );
-
-        Paint textPaint = new Paint();
-        textPaint.setColor(Color.WHITE);
-        textPaint.setTextSize(50F);
-
-        String overlayText = getString(R.string.overlay_help);
-        Rect textBounds = new Rect();
-        textPaint.getTextBounds(overlayText, 0, overlayText.length(), textBounds);
-        float textX = (surfaceWidth - textBounds.width()) / 2f;
-        float textY = rectBottom + textBounds.height() + 15f; // put text below rect and 15f padding
-        canvas.drawText(getString(R.string.overlay_help), textX, textY, textPaint);
-        holder.unlockCanvasAndPost(canvas);
-    }
-
-    public class ImageFromText implements ImageAnalysis.Analyzer {
-        TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
-        @Override
-        public void  analyze(@NonNull ImageProxy image) {
-
-            @OptIn(markerClass = ExperimentalGetImage.class)
-            Image curImage = image.getImage();
-            Rect rect = image.getCropRect();
-            Log.d("OKAY", String.valueOf(image.getPlanes()[0].getBuffer().limit()));
-            Log.d("OKAY"," ("+ curImage.getWidth()+","+curImage.getHeight()+")");
-            Log.d("OKAY"," ("+rect.left+","+rect.top+")"+" ("+rect.right+","+rect.bottom+")");
-
-
-            if(curImage!=null){
-                InputImage inpimage = InputImage.fromMediaImage(curImage,image.getImageInfo().getRotationDegrees());
-                recognizer.process(inpimage).addOnSuccessListener(
-                        (Text output)->{
-                            msgb.delete(0, msgb.length());
-                            msgb.append(output.getText());
-                            tv.setText(msgb.toString());
-                        }
-                ).addOnCanceledListener(new OnCanceledListener() {
-                    @Override
-                    public void onCanceled() {
-                        image.close();
-                    }
-                }).addOnCompleteListener(new OnCompleteListener<Text>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Text> task) {
-                        image.close();
-                    }
-                });
-            }
-
-        }
-    }
 
 }
