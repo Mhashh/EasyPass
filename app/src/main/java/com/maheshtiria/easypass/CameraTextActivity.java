@@ -2,13 +2,11 @@ package com.maheshtiria.easypass;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.AspectRatio;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ExperimentalGetImage;
-import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.core.UseCaseGroup;
@@ -22,39 +20,24 @@ import androidx.lifecycle.ViewModelProvider;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Rect;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.util.Rational;
-import android.util.Size;
-import android.view.View;
-import android.view.WindowMetrics;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.odml.image.MlImage;
+
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.maheshtiria.easypass.imageutils.ImageUtil;
 import com.maheshtiria.easypass.recognizer.TextDetection;
 import com.maheshtiria.easypass.viewmodel.CameraViewModel;
 
-import java.io.IOException;
-import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -62,21 +45,13 @@ public class CameraTextActivity extends AppCompatActivity {
 
     private ExecutorService cameraExecutor;
     private PreviewView cameraDisplay;
-    private View surfaceView;
     private TextView tv;
-    private Button button;
-    private Button click;
-    private CameraViewModel viewModel;
-    private int cropWidth=200;
-    private int cropHeight = 100;
+  private Button click;
     static final int CAMERA_REQUEST = 0;
-    private double RATIO_4_3_VALUE = (4.0/3.0);
-    private double RATIO_16_9_VALUE = (16.0/9.0);
     private DisplayMetrics displayMetrics;
-    private int crop_height_percent = 40;
-    private StringBuilder msgb = new StringBuilder();
+    private final StringBuilder msgb = new StringBuilder();
 
-    private TextRecognizer detector = TextDetection.detector;
+    private final TextRecognizer detector = TextDetection.detector;
     private int width=0;
     private int height=60;
     @Override
@@ -85,34 +60,29 @@ public class CameraTextActivity extends AppCompatActivity {
         //view init
         setContentView(R.layout.activity_camera_text);
         cameraDisplay = findViewById(R.id.viewFinder);
-        button = findViewById(R.id.goBack);
-        surfaceView = findViewById(R.id.scanner_view);
-        tv = findViewById(R.id.current_text);
+      Button button = findViewById(R.id.goBack);
+      tv = findViewById(R.id.current_text);
         click = findViewById(R.id.click);
         //view init
         msgb.append(" ");
-        Log.d("OKAY","onCreated");
 
-        viewModel = new ViewModelProvider(this).get(CameraViewModel.class);
+      CameraViewModel viewModel = new ViewModelProvider(this).get(CameraViewModel.class);
         viewModel.init();
-        viewModel.scan.observe(this,it->{
-            tv.setText(it);
-        });
+        viewModel.scan.observe(this, it-> tv.setText(it));
 
         //screen height width
         initDisplayMetrics();
-        Rect rect = getWindowManager().getCurrentWindowMetrics().getBounds();
         width = displayMetrics.widthPixels;
 
         height= (int)((float)height*displayMetrics.density);
-        Log.d("VALUES","width : "+width+" window width : "+rect.width());
-        Log.d("VALUES","height : "+height+" window height : "+rect.height());
         cameraDisplay.setScaleType(PreviewView.ScaleType.FIT_CENTER);
-        getSupportActionBar().hide();
+        ActionBar topbar = getSupportActionBar();
+        if(topbar!=null)
+          topbar.hide();
 
         // Request camera permissions
         if (!allPermissionsGranted()) {
-            String requiredPermissions[] = new String[2];
+            String[] requiredPermissions = new String[2];
             requiredPermissions[0] = Manifest.permission.CAMERA;
             requiredPermissions[1] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
             ActivityCompat.requestPermissions(
@@ -145,8 +115,7 @@ public class CameraTextActivity extends AppCompatActivity {
     @ExperimentalGetImage
     private void startCamera() {
         //camera event
-        Log.d("OKAY","start camera ");
-        ListenableFuture cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
         
 
@@ -154,7 +123,7 @@ public class CameraTextActivity extends AppCompatActivity {
             // Used to bind the lifecycle of cameras to the lifecycle owner
             ProcessCameraProvider processCameraProvider;
             try {
-                processCameraProvider =   (ProcessCameraProvider) cameraProviderFuture.get();
+                processCameraProvider = cameraProviderFuture.get();
 
 
 
@@ -174,45 +143,28 @@ public class CameraTextActivity extends AppCompatActivity {
                                 .setTargetRotation(preview.getTargetRotation())
                                 .build();
 
-                click.setOnClickListener((view)->{
+                click.setOnClickListener((view)-> imageCapture.takePicture(cameraExecutor,
+                    new ImageCapture.OnImageCapturedCallback(){
+                        @Override
+                        public void onCaptureSuccess(@NonNull ImageProxy image) {
 
-                    Log.d("VALUES","height : "+surfaceView.getWidth()+"   "+surfaceView.getHeight());
+                            InputImage img = ImageUtil.crop(image);
 
-                    imageCapture.takePicture(cameraExecutor,
-                        new ImageCapture.OnImageCapturedCallback(){
-                            @Override
-                            public void onCaptureSuccess(@NonNull ImageProxy image) {
-                                Log.d("VALUES","crop rect : "+image.getCropRect().toString());
+                            detector.process(img)
+                                .addOnSuccessListener(
+                                  text -> {
+                                      String value = text.getText();
+                                      msgb.delete(0,msgb.length());
+                                      msgb.append(value);
 
-                                InputImage img = ImageUtil.crop(image);
-
-                                Task<Text> result = detector.process(img)
-                                    .addOnSuccessListener(
-                                    new OnSuccessListener<Text>() {
-                                        @Override
-                                        public void onSuccess(Text text) {
-                                            String value = text.getText();
-                                            Log.d("VALUES","SCAN : "+value);
-                                            msgb.delete(0,msgb.length());
-                                            msgb.append(value);
-
-                                            tv.setText(value);
-                                            Toast.makeText(getApplicationContext(),value,Toast.LENGTH_LONG);
-                                        }
-                                    }
-                                    ).addOnFailureListener(
-                                        new OnFailureListener() {
-                                            @Override
-                                            public void onFailure(@NonNull Exception e) {
-                                                Toast.makeText(getApplicationContext(),"Error occured while scanning",Toast.LENGTH_LONG);
-                                            }
-                                        }
-                                    );
-                            }
+                                      tv.setText(value);
+                                  }
+                                ).addOnFailureListener(
+                                e -> Toast.makeText(getApplicationContext(),"Error occured while scanning",Toast.LENGTH_LONG).show()
+                              );
                         }
-                    );
-
-                });
+                    }
+                ));
 
                 UseCaseGroup useCaseGroup = new UseCaseGroup.Builder()
                         .addUseCase(preview)
@@ -226,7 +178,6 @@ public class CameraTextActivity extends AppCompatActivity {
                     processCameraProvider.bindToLifecycle(this,cameraSelector,useCaseGroup);
 
                 }catch (Exception e){
-                    Log.d("OKAY",e.getMessage());
                     Toast.makeText(this,"Unable to use camera",Toast.LENGTH_LONG).show();
                     finish();
                 }
@@ -234,7 +185,6 @@ public class CameraTextActivity extends AppCompatActivity {
 
 
             } catch (Exception e) {
-                Log.d("OKAY",e.getMessage());
                 Toast.makeText(this,"Unable to use camera",Toast.LENGTH_LONG).show();
                 finish();
             }
@@ -243,7 +193,7 @@ public class CameraTextActivity extends AppCompatActivity {
     }
 
     private boolean allPermissionsGranted() {
-        Boolean granted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+        boolean granted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
                 PackageManager.PERMISSION_GRANTED;
         granted = granted && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED;
@@ -256,24 +206,22 @@ public class CameraTextActivity extends AppCompatActivity {
 
     @Override
     @OptIn(markerClass = ExperimentalGetImage.class)
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case CameraTextActivity.CAMERA_REQUEST:
-                if(grantResults[0]==PackageManager.PERMISSION_GRANTED){
-                    startCamera();
-                }
-                else{
+      if (requestCode == CameraTextActivity.CAMERA_REQUEST) {
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+          startCamera();
+        } else {
 
-                    Toast.makeText(this,"Permissions not granted !",Toast.LENGTH_SHORT).show();
-                    Intent result = new Intent("com.example.RESULT_ACTION", Uri.parse("content://result_uri"));
-                    result.putExtra("surprise","permissions maybe");
-                    setResult(Activity.RESULT_OK, result);
+          Toast.makeText(this, "Permissions not granted !", Toast.LENGTH_SHORT).show();
+          Intent result = new Intent("com.example.RESULT_ACTION", Uri.parse("content://result_uri"));
+          result.putExtra("surprise", "permissions maybe");
+          setResult(Activity.RESULT_OK, result);
 
-                    finish();
-                }
+          finish();
         }
+      }
     }
 
     @Override
