@@ -16,8 +16,14 @@ public interface PassDao {
     @Query("SELECT * FROM pass WHERE accname IN (:accNames)")
     List<Pass> loadAllByIds(String[] accNames) throws Exception;
 
-    @Query("SELECT * FROM pass WHERE accname = :name")
-    Pass findByAccName(String name) throws Exception;
+    @Query("SELECT * FROM pass WHERE appname = :name")
+    Pass findByAppName(String name) throws Exception;
+
+    @Query("SELECT salt FROM pass WHERE appname = :name")
+    String findSaltByAppName(String name) throws Exception;
+
+    @Query("SELECT sugar FROM pass WHERE appname = :name")
+    String findSugarByAppName(String name) throws Exception;
 
     @Insert
     void insert(Pass onepass) throws Exception;

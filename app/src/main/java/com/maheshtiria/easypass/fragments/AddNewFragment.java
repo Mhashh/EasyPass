@@ -21,10 +21,16 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.maheshtiria.easypass.CameraTextActivity;
+import com.maheshtiria.easypass.EncryptActivity;
 import com.maheshtiria.easypass.R;
 import com.maheshtiria.easypass.database.Pass;
 import com.maheshtiria.easypass.database.PassDao;
 import com.maheshtiria.easypass.database.Pdb;
+import com.maheshtiria.easypass.encryption.PassEncrypt;
+
+import java.util.Date;
+
+import javax.crypto.spec.IvParameterSpec;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -51,6 +57,7 @@ public class AddNewFragment extends Fragment {
 
     ActivityResultLauncher<Intent> passTextForResult;
 
+    ActivityResultLauncher<Intent> encryptForResult;
 
     public AddNewFragment() {
         // Required empty public constructor
@@ -111,9 +118,31 @@ public class AddNewFragment extends Fragment {
                     }
                 }
             });
+
+        encryptForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+          new ActivityResultCallback<ActivityResult>() {
+              @Override
+              public void onActivityResult(ActivityResult result) {
+                  if(result.getResultCode() == Activity.RESULT_OK){
+                      Intent intent = result.getData();
+                      // Handle the Intent
+                      boolean authorized = intent.getBooleanExtra("Authorized",false);
+                      if(authorized){
+                        String encrypt = intent.getStringExtra("encrypt");
+                        String salt = intent.getStringExtra("salt");
+                        String sugar = intent.getStringExtra("sugar");
+                        addNewRecord(encrypt,salt,sugar);
+                      }
+                      else{
+                          Toast.makeText(getContext(),"Not Authorized !",Toast.LENGTH_LONG).show();
+                      }
+
+                  }
+              }
+          });
     }
 
-    private void addNewRecord(){
+    private void addNewRecord(String encrypt,String salt,String sugar){
 
         String acc = inp1.getText().toString();
         String apw = inp2.getText().toString();
@@ -125,26 +154,28 @@ public class AddNewFragment extends Fragment {
             Toast.makeText(getContext(),"Fields are Empty !",Toast.LENGTH_LONG).show();
             return;
         }
-        Pass newPass = new Pass(acc,apw,pass);
+
+        Pass newPass = new Pass(acc,apw,encrypt,salt,sugar);
 
         dbInstance.getQueryExecutor().execute(
-                () -> {
-                    try {
-                        pd.insert(newPass);
-                        Looper.prepare();
-                        Toast.makeText(getContext(), "Successfully added the account !", Toast.LENGTH_LONG).show();
-                    } catch (Exception e) {
-                        String[] msgs = e.getMessage().split(" ");
-                        String msg = "Unknown Error during storage!";
-                        if(msgs[0].equals("UNIQUE")){
-                            msg = "Account already exists !";
-                        }else if(msgs[1].equals("NULL")){
-                            msg = "Fields are Empty !";
-                        }
-                        Looper.prepare();
-                        Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
+            () -> {
+                try {
+                    pd.insert(newPass);
+                    Looper.prepare();
+                    Toast.makeText(getContext(), "Successfully added the account !", Toast.LENGTH_LONG).show();
+                } catch (Exception e) {
+                    String[] msgs = e.getMessage().split(" ");
+                    String msg = "Unknown Error during storage!";
+                    if(msgs[0].equals("UNIQUE")){
+                        msg = "Account already exists !";
+                    }else if(msgs[1].equals("NULL")){
+                        msg = "Fields are Empty !";
                     }
+                    Looper.prepare();
+                    Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
+
                 }
+            }
         );
 
     }
@@ -184,8 +215,22 @@ public class AddNewFragment extends Fragment {
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addNewRecord();
-                Log.d("OKAY","submit clicked!");
+                //string values for input fields
+                String acc = inp1.getText().toString();
+                String apw = inp2.getText().toString();
+
+                //check fields are not empty
+                if(acc.equals("") || apw.equals("") || inp3.getText().toString().equals("")){
+                    Toast.makeText(getContext(),"Fields are Empty !",Toast.LENGTH_LONG).show();
+                    return;
+                }
+                else {
+                    //going to encrypt activity for encrypted password
+                    encryptForResult.launch(
+                        new Intent(getContext(), EncryptActivity.class)
+                        .putExtra("pass", inp3.getText().toString())
+                    );
+                }
             }
         });
 
