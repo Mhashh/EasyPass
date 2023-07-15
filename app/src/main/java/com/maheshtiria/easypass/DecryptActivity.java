@@ -3,13 +3,19 @@ package com.maheshtiria.easypass;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import com.maheshtiria.easypass.database.PassDao;
+import com.maheshtiria.easypass.database.Pdb;
 import com.maheshtiria.easypass.encryption.PassEncrypt;
 
 import javax.crypto.spec.IvParameterSpec;
@@ -24,30 +30,73 @@ public class DecryptActivity extends AppCompatActivity {
     setContentView(R.layout.activity_verify);
     inp = findViewById(R.id.masterkey);
     button = findViewById(R.id.verify);
-
+    SharedPreferences sharedPreferences = this.getSharedPreferences(Globals.USERAUTH, Context.MODE_PRIVATE);
 
 
     button.setOnClickListener((view)->{
-      String auth = this.getIntent().getStringExtra("auth");
-      String encrypt = this.getIntent().getStringExtra("encrypt");
-      String salt = this.getIntent().getStringExtra("salt");
-      byte[] ivBytes = this.getIntent().getByteArrayExtra("iv");
-      Log.d("VALUES",new String(ivBytes));
-      IvParameterSpec iv = new IvParameterSpec(ivBytes);
-      String decrypt = PassEncrypt.decryptAuth(encrypt,inp.getText().toString(),salt,iv);
-      Log.d("VALUES",decrypt);
-      if(decrypt.equals(auth)){
-        Intent result = new Intent("com.example.RESULT_ACTION", Uri.parse("content://result_uri"));
-        result.putExtra("Authorized",true);
-        result.putExtra("decrypt",decrypt);
-        setResult(Activity.RESULT_OK, result);
+
+      //userauth password
+      String authencrypt = sharedPreferences.getString("encryt","");
+      String auth = sharedPreferences.getString("auth","");
+      String authsalt = sharedPreferences.getString("salt","");
+      String authiv = sharedPreferences.getString("iv","");
+
+      String authdecrypt = PassEncrypt.decryptAuth(authencrypt,inp.getText().toString(),authsalt,new IvParameterSpec(authiv.getBytes()));
+
+      if(authdecrypt.equals(auth)){
+        String encrypt = this.getIntent().getStringExtra("encrypt");
+        String name = this.getIntent().getStringExtra("name");
+        int index = this.getIntent().getIntExtra("index",-1);
+
+        //getting local db interface
+        Pdb dbInstance = Pdb.getDb(this);
+        PassDao pd = dbInstance.passDao();
+
+        //db thread to get salt and iv vector
+        dbInstance.getQueryExecutor().execute(
+          ()->{
+            Intent result = new Intent("com.example.RESULT_ACTION", Uri.parse("content://result_uri"));
+            try{
+
+              String ivString = pd.findSugarByAppName(name);
+              String salt = pd.findSaltByAppName(name);
+              String decrypt="";
+              IvParameterSpec iv = new IvParameterSpec(ivString.getBytes());
+
+              decrypt = PassEncrypt.decryptAuth(encrypt,inp.getText().toString(),salt,iv);
+              Log.d("VALUES","decrypt Pass  : "+encrypt+"  "+name+"  "+index+" "+salt+" "+decrypt);
+              if(decrypt.equals("")){
+
+                result.putExtra("Authorized",false);
+                result.putExtra("index",-1);
+                setResult(Activity.RESULT_OK, result);
+              }
+              else {
+
+                result.putExtra("Authorized", true);
+                result.putExtra("index",index);
+                result.putExtra("decrypt", decrypt);
+                setResult(Activity.RESULT_OK, result);
+              }
+
+
+            }catch(Exception e){
+              result.putExtra("Authorized",false);
+              result.putExtra("index",-1);
+              setResult(Activity.RESULT_OK, result);
+            }
+            finish();
+          }
+        );
       }
       else{
         Intent result = new Intent("com.example.RESULT_ACTION", Uri.parse("content://result_uri"));
         result.putExtra("Authorized",false);
+        result.putExtra("index",-1);
         setResult(Activity.RESULT_OK, result);
+        finish();
       }
-      finish();
+
     });
   }
 }

@@ -1,8 +1,16 @@
 package com.maheshtiria.easypass.fragments;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentResultListener;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -14,8 +22,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.maheshtiria.easypass.DecryptActivity;
 import com.maheshtiria.easypass.R;
 import com.maheshtiria.easypass.database.Pass;
 import com.maheshtiria.easypass.database.PassDao;
@@ -34,6 +44,22 @@ public class ListFragment extends Fragment {
     private Pdb dbInstance;
     private PassDao pd;
     private LiveData<List<Pass>> list;
+    PassListAdapter pl;
+    ActivityResultLauncher<Intent> decryptForResult;
+
+    OnItemClickListener onRecyclerViewItemClicked = new OnItemClickListener() {
+        @Override
+        public void onItemClickListener(View v, int index) {
+            decryptForResult.launch(
+              new Intent(getContext(), DecryptActivity.class)
+                .putExtra("index",index)
+                .putExtra("name",((TextView)v.findViewById(R.id.brand)).getText().toString())
+                .putExtra("encrypt",((TextView)v.findViewById(R.id.password)).getText().toString())
+            );
+        }
+    };
+
+
 
     public ListFragment() {
 
@@ -48,6 +74,7 @@ public class ListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         dbInstance = Pdb.getDb(getContext());
         pd = dbInstance.passDao();
         dbInstance.getQueryExecutor().execute(
@@ -61,6 +88,29 @@ public class ListFragment extends Fragment {
                 }
         );
 
+        decryptForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+          new ActivityResultCallback<ActivityResult>() {
+              @Override
+              public void onActivityResult(ActivityResult result) {
+                  Log.d("VALUES","callback");
+                  if(result.getResultCode() == Activity.RESULT_OK){
+                      Intent intent = result.getData();
+                      // Handle the Intent
+                      boolean authorized = intent.getBooleanExtra("Authorized",false);
+                      Log.d("VALUES","callback2");
+                      if(authorized){
+                          String decrypt = intent.getStringExtra("decrypt");
+                          int index = intent.getIntExtra("index",-1);
+                          Log.d("VALUES","decrypt for result "+decrypt);
+                          pl.showTruePass(index,decrypt);
+                      }
+                      else{
+                          Toast.makeText(getContext(),"Not Authorized !",Toast.LENGTH_LONG).show();
+                      }
+
+                  }
+              }
+          });
 
 
     }
@@ -74,13 +124,15 @@ public class ListFragment extends Fragment {
         Log.d("OKAY","onCreate start");
 
 
-        PassListAdapter pl = new PassListAdapter();
+        pl = new PassListAdapter(onRecyclerViewItemClicked);
 
         LinearLayoutManager llm = new LinearLayoutManager( getActivity());
         RecyclerView rv = rootview.findViewById(R.id.rcview);
         rv.setLayoutManager(llm);
         rv.setItemAnimator(new DefaultItemAnimator());
         rv.setAdapter(pl);
+
+
 
         list.observe(getViewLifecycleOwner(), new Observer<List<Pass>>() {
             @Override
@@ -93,3 +145,4 @@ public class ListFragment extends Fragment {
         return rootview;
     }
 }
+

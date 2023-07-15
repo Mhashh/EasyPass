@@ -61,7 +61,6 @@ public class PassEncrypt {
       return  encrypt("AES",auth,key,iv);
     }
     catch (Exception e){
-      Log.d("VALUES","ENCRYPT "+e.getMessage());
       return "";
     }
   }
@@ -72,7 +71,6 @@ public class PassEncrypt {
       return decrypt("AES",auth,key,iv);
     }
     catch (Exception e){
-      Log.d("VALUES","DECRYPT "+e.getMessage());
       return "";
     }
   }

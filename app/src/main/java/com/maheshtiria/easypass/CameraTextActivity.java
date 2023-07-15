@@ -187,27 +187,27 @@ public class CameraTextActivity extends AppCompatActivity {
                                 InputImage img = ImageUtil.crop(image);
 
                                 Task<Text> result = detector.process(img)
-                                        .addOnSuccessListener(
-                                        new OnSuccessListener<Text>() {
-                                            @Override
-                                            public void onSuccess(Text text) {
-                                                String value = text.getText();
-                                                Log.d("VALUES","SCAN : "+value);
-                                                msgb.delete(0,msgb.length());
-                                                msgb.append(value);
+                                    .addOnSuccessListener(
+                                    new OnSuccessListener<Text>() {
+                                        @Override
+                                        public void onSuccess(Text text) {
+                                            String value = text.getText();
+                                            Log.d("VALUES","SCAN : "+value);
+                                            msgb.delete(0,msgb.length());
+                                            msgb.append(value);
 
-                                                tv.setText(value);
-                                                Toast.makeText(getApplicationContext(),value,Toast.LENGTH_LONG);
+                                            tv.setText(value);
+                                            Toast.makeText(getApplicationContext(),value,Toast.LENGTH_LONG);
+                                        }
+                                    }
+                                    ).addOnFailureListener(
+                                        new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(getApplicationContext(),"Error occured while scanning",Toast.LENGTH_LONG);
                                             }
                                         }
-                                        ).addOnFailureListener(
-                                            new OnFailureListener() {
-                                                @Override
-                                                public void onFailure(@NonNull Exception e) {
-                                                    Toast.makeText(getApplicationContext(),"Error occured while scanning",Toast.LENGTH_LONG);
-                                                }
-                                            }
-                                        );
+                                    );
                             }
                         }
                     );
