@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Rect;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -48,6 +49,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognizer;
+import com.maheshtiria.easypass.imageutils.ImageUtil;
 import com.maheshtiria.easypass.recognizer.TextDetection;
 import com.maheshtiria.easypass.viewmodel.CameraViewModel;
 
@@ -177,36 +179,37 @@ public class CameraTextActivity extends AppCompatActivity {
                     Log.d("VALUES","height : "+surfaceView.getWidth()+"   "+surfaceView.getHeight());
 
                     imageCapture.takePicture(cameraExecutor,
-                            new ImageCapture.OnImageCapturedCallback(){
-                                @Override
-                                public void onCaptureSuccess(@NonNull ImageProxy image) {
-                                    Log.d("VALUES","height : "+image.getWidth()+"   "+image.getHeight()+"   "+image.getCropRect().left+"   "+image.getCropRect().right);
+                        new ImageCapture.OnImageCapturedCallback(){
+                            @Override
+                            public void onCaptureSuccess(@NonNull ImageProxy image) {
+                                Log.d("VALUES","crop rect : "+image.getCropRect().toString());
 
-                                    InputImage img = InputImage.fromMediaImage(image.getImage(),image.getImageInfo().getRotationDegrees());
+                                InputImage img = ImageUtil.crop(image);
 
-                                    Task<Text> result = detector.process(img)
-                                            .addOnSuccessListener(
-                                            new OnSuccessListener<Text>() {
+                                Task<Text> result = detector.process(img)
+                                        .addOnSuccessListener(
+                                        new OnSuccessListener<Text>() {
+                                            @Override
+                                            public void onSuccess(Text text) {
+                                                String value = text.getText();
+                                                Log.d("VALUES","SCAN : "+value);
+                                                msgb.delete(0,msgb.length());
+                                                msgb.append(value);
+
+                                                tv.setText(value);
+                                                Toast.makeText(getApplicationContext(),value,Toast.LENGTH_LONG);
+                                            }
+                                        }
+                                        ).addOnFailureListener(
+                                            new OnFailureListener() {
                                                 @Override
-                                                public void onSuccess(Text text) {
-                                                    String value = text.getText();
-                                                    Log.d("VALUES","SCAN : "+value);
-                                                    msgb.delete(0,msgb.length());
-                                                    msgb.append(value);
-
-                                                    tv.setText(value);
+                                                public void onFailure(@NonNull Exception e) {
+                                                    Toast.makeText(getApplicationContext(),"Error occured while scanning",Toast.LENGTH_LONG);
                                                 }
                                             }
-                                            ).addOnFailureListener(
-                                                    new OnFailureListener() {
-                                                        @Override
-                                                        public void onFailure(@NonNull Exception e) {
-
-                                                        }
-                                                    }
-                                            );
-                                }
+                                        );
                             }
+                        }
                     );
 
                 });
