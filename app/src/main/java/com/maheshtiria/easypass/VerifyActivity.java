@@ -1,5 +1,9 @@
 package com.maheshtiria.easypass;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -10,6 +14,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.maheshtiria.easypass.encryption.PassEncrypt;
 
@@ -19,6 +25,9 @@ public class VerifyActivity extends AppCompatActivity {
 
   EditText inp;
   Button button;
+  ImageButton imgcam;
+  ActivityResultLauncher<Intent> passTextForResult;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -26,6 +35,31 @@ public class VerifyActivity extends AppCompatActivity {
     inp = findViewById(R.id.masterkey);
     button = findViewById(R.id.verify);
 
+    imgcam = findViewById(R.id.acc_cam);
+
+    //register for result from camera activity callback
+    passTextForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+      new ActivityResultCallback<ActivityResult>() {
+        @Override
+        public void onActivityResult(ActivityResult result) {
+          if (result.getResultCode() == Activity.RESULT_OK) {
+            Intent intent = result.getData();
+            // Handle the Intent
+            String msg = intent.getStringExtra("surprise");
+            inp.setText(msg);
+            Toast.makeText(getApplicationContext(),msg,Toast.LENGTH_LONG).show();
+          }
+        }
+      });
+
+    //sends to camera activity for scanning
+    imgcam.setOnClickListener(
+      v->{
+        passTextForResult.launch(
+          new Intent(this, CameraTextActivity.class)
+        );
+      }
+    );
 
 
     button.setOnClickListener((view)->{

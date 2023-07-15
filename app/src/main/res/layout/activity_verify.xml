@@ -9,21 +9,36 @@
     <EditText
         android:id="@+id/masterkey"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="54dp"
         android:layout_marginStart="36dp"
         android:layout_marginTop="288dp"
         android:layout_marginEnd="75dp"
-        android:hint="Master Password"
+        android:hint="Main Password"
         android:textSize="25sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.812"
+        app:layout_constraintHorizontal_bias="0.445"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/acc_cam"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="28dp"
+        android:contentDescription="opens camera to scan text for account name"
+        android:src="@android:drawable/ic_menu_camera"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/masterkey"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.401" />
 
     <Button
         android:id="@+id/verify"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:layout_marginStart="162dp"
         android:layout_marginTop="100dp"
         android:layout_marginEnd="162dp"
