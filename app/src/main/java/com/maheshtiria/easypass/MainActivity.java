@@ -1,14 +1,5 @@
 package com.maheshtiria.easypass;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.navigation.ui.NavigationUI;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -17,12 +8,18 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.navigation.ui.NavigationUI;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
-  String current="Add New";
 
   ActivityResultLauncher<Intent> verifyForResult;
   @Override
@@ -38,12 +35,14 @@ public class MainActivity extends AppCompatActivity {
         if (result.getResultCode() == Activity.RESULT_OK) {
           Intent intent = result.getData();
           // Handle the Intent
-          boolean msg = intent.getBooleanExtra("Authorized",false);
-          if(msg)
-            Toast.makeText(getApplicationContext(),"Authorized",Toast.LENGTH_LONG).show();
-          else {
-            Toast.makeText(getApplicationContext(), "Not Authorized", Toast.LENGTH_LONG).show();
-            finish();
+          if(intent!=null) {
+            boolean msg = intent.getBooleanExtra("Authorized", false);
+            if (msg)
+              Toast.makeText(getApplicationContext(), "Authorized", Toast.LENGTH_LONG).show();
+            else {
+              Toast.makeText(getApplicationContext(), "Not Authorized", Toast.LENGTH_LONG).show();
+              finish();
+            }
           }
         }
       });
@@ -71,9 +70,14 @@ public class MainActivity extends AppCompatActivity {
 
 
     NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
-    NavController navController = navHostFragment.getNavController();
-    BottomNavigationView bv = (BottomNavigationView)findViewById(R.id.nav_bar);
-    NavigationUI.setupWithNavController(bv,navController);
+    NavController navController;
+    if (navHostFragment != null) {
+      navController = navHostFragment.getNavController();
+      BottomNavigationView bv = (BottomNavigationView)findViewById(R.id.nav_bar);
+      NavigationUI.setupWithNavController(bv,navController);
+
+    }
+
 
   }
 }

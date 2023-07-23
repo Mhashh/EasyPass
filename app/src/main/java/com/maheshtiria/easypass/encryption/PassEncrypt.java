@@ -1,7 +1,5 @@
 package com.maheshtiria.easypass.encryption;
 
-import android.util.Log;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

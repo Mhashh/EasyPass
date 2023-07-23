@@ -6,12 +6,7 @@
     <style name="text_view_night" parent="Widget.AppCompat.TextView">
         <item name="android:textColor">@color/text_view_color_night</item>
     </style>
-    <style name="text_view_day." parent="Widget.AppCompat.TextView">
-        <item name="android:textColor">@color/text_view_color_day</item>
-    </style>
-    <style name="action_bar_night" parent="Widget.AppCompat.ActionBar.Solid">
-        <item name="background">@color/night_primary</item>
-    </style>
+
     <style name="button_night" parent="Widget.AppCompat.Button">
         <item name="android:background">@drawable/button_design_night</item>
         <item name="android:textColor">@color/white</item>

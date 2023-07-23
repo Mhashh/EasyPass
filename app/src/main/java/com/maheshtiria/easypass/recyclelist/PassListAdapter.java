@@ -1,6 +1,7 @@
 package com.maheshtiria.easypass.recyclelist;
 
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,8 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.maheshtiria.easypass.R;
@@ -22,7 +22,7 @@ import java.util.List;
 
 public class PassListAdapter extends RecyclerView.Adapter<PassListAdapter.ViewHolder> {
 
-    private ArrayList<Pass> passes=new ArrayList<>();
+    private final ArrayList<Pass> passes=new ArrayList<>();
     OnItemClickListener itemClickListener;
     /**
      * Provide a reference to the type of views that you are using
@@ -59,15 +59,12 @@ public class PassListAdapter extends RecyclerView.Adapter<PassListAdapter.ViewHo
     }
 
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         // Create a new view, which defines the UI of the list item
         View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.display_item, viewGroup, false);
-
-
-        TextView pswd = view.findViewById(R.id.password);
-        TextView name = view.findViewById(R.id.brand);
 
         return new ViewHolder(view);
     }
@@ -89,6 +86,7 @@ public class PassListAdapter extends RecyclerView.Adapter<PassListAdapter.ViewHo
           }
         );
     }
+    @SuppressLint("NotifyDataSetChanged")
     public void submitList(List<Pass> newData){
 
         passes.clear();
@@ -97,7 +95,8 @@ public class PassListAdapter extends RecyclerView.Adapter<PassListAdapter.ViewHo
 
     }
 
-    public  void showTruePass(int index,String value){
+    @SuppressLint("NotifyDataSetChanged")
+    public  void showTruePass(int index, String value){
         if(index>=0) {
             Pass cur = passes.get(index);
             cur.pswd = value;

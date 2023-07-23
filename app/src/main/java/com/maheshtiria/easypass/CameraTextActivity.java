@@ -192,9 +192,8 @@ public class CameraTextActivity extends AppCompatActivity {
     }
 
     private boolean allPermissionsGranted() {
-        boolean granted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
-                PackageManager.PERMISSION_GRANTED;
-        return granted;
+      return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
+              PackageManager.PERMISSION_GRANTED;
     }
 
     private void initDisplayMetrics() {

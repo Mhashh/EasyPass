@@ -1,3 +1,11 @@
 <resources>
- <dimen name="activity_horizontal_margin">48dp</dimen>
+    <dimen name="font_brand">12sp</dimen>
+    <dimen name="font_acc">15sp</dimen>
+    <dimen name="p_text">5sp</dimen>
+    <dimen name="font_password">12sp</dimen>
+    <dimen name="item_padding">10dp</dimen>
+    <dimen name="padding_password">4dp</dimen>
+    <dimen name="item_margin">20dp</dimen>
+    <dimen name="height_bottom_bar">70dp</dimen>
+    <dimen name="height_input">60dp</dimen>
 </resources>

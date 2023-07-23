@@ -1,7 +1,6 @@
 package com.maheshtiria.easypass.database;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Size;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -28,7 +27,7 @@ public class Pass {
     @ColumnInfo(name = "sugar")
     public String sugar;
 
-    public Pass(String accname, String what, String pswd,String salt,String sugar) {
+    public Pass(String accname, @NonNull String what, @NonNull String pswd, @NonNull String salt, @NonNull String sugar) {
         this.accname = accname;
         this.what = what;
         this.pswd = pswd;

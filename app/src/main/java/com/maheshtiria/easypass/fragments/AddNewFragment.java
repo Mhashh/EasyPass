@@ -3,15 +3,7 @@ package com.maheshtiria.easypass.fragments;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.fragment.app.Fragment;
-
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,23 +12,17 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.fragment.app.Fragment;
+
 import com.maheshtiria.easypass.CameraTextActivity;
 import com.maheshtiria.easypass.EncryptActivity;
 import com.maheshtiria.easypass.R;
 import com.maheshtiria.easypass.database.Pass;
 import com.maheshtiria.easypass.database.PassDao;
 import com.maheshtiria.easypass.database.Pdb;
-import com.maheshtiria.easypass.encryption.PassEncrypt;
 
-import java.util.Date;
-
-import javax.crypto.spec.IvParameterSpec;
-
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link AddNewFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class AddNewFragment extends Fragment {
     //input fields
     EditText inp1;
@@ -63,13 +49,6 @@ public class AddNewFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static AddNewFragment newInstance(String param1, String param2) {
-        AddNewFragment fragment = new AddNewFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,63 +57,51 @@ public class AddNewFragment extends Fragment {
 
         appTextForResult = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent intent = result.getData();
-                        // Handle the Intent
-                        String msg = intent.getStringExtra("surprise");
-                        inp1.setText(msg);
-                    }
-                }
-            });
+          result -> {
+              if (result.getResultCode() == Activity.RESULT_OK) {
+                  Intent intent = result.getData();
+                  // Handle the Intent
+                  String msg = intent != null ? intent.getStringExtra("surprise") : null;
+                  inp1.setText(msg);
+              }
+          });
 
         accTextForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent intent = result.getData();
-                        // Handle the Intent
-                        String msg = intent.getStringExtra("surprise");
-                        inp2.setText(msg);
-                    }
-                }
-            });
+          result -> {
+              if (result.getResultCode() == Activity.RESULT_OK) {
+                  Intent intent = result.getData();
+                  // Handle the Intent
+                  String msg = intent != null ? intent.getStringExtra("surprise") : null;
+                  inp2.setText(msg);
+              }
+          });
 
         passTextForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-            new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK) {
-                        Intent intent = result.getData();
-                        // Handle the Intent
-                        String msg = intent.getStringExtra("surprise");
-                        inp3.setText(msg);
-                    }
-                }
-            });
+          result -> {
+              if (result.getResultCode() == Activity.RESULT_OK) {
+                  Intent intent = result.getData();
+                  // Handle the Intent
+                  String msg = intent != null ? intent.getStringExtra("surprise") : null;
+                  inp3.setText(msg);
+              }
+          });
 
         encryptForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-          new ActivityResultCallback<ActivityResult>() {
-              @Override
-              public void onActivityResult(ActivityResult result) {
-                  if(result.getResultCode() == Activity.RESULT_OK){
-                      Intent intent = result.getData();
-                      // Handle the Intent
-                      boolean authorized = intent.getBooleanExtra("Authorized",false);
-                      if(authorized){
-                        String encrypt = intent.getStringExtra("encrypt");
-                        String salt = intent.getStringExtra("salt");
-                        String sugar = intent.getStringExtra("sugar");
-                        addNewRecord(encrypt,salt,sugar);
-                      }
-                      else{
-                          Toast.makeText(getContext(),"Not Authorized !",Toast.LENGTH_LONG).show();
-                      }
-
+          result -> {
+              if(result.getResultCode() == Activity.RESULT_OK){
+                  Intent intent = result.getData();
+                  // Handle the Intent
+                  boolean authorized = intent.getBooleanExtra("Authorized",false);
+                  if(authorized){
+                    String encrypt = intent.getStringExtra("encrypt");
+                    String salt = intent.getStringExtra("salt");
+                    String sugar = intent.getStringExtra("sugar");
+                    addNewRecord(encrypt,salt,sugar);
                   }
+                  else{
+                      Toast.makeText(getContext(),"Not Authorized !",Toast.LENGTH_LONG).show();
+                  }
+
               }
           });
     }
@@ -197,41 +164,31 @@ public class AddNewFragment extends Fragment {
         passCam=rootview.findViewById(R.id.pass_cam);
         Button submit = rootview.findViewById(R.id.submit);
 
-        appCam.setOnClickListener((view)->{
-            appTextForResult.launch(
-                    new Intent(getContext(), CameraTextActivity.class)
-            );
-        });
-        accCam.setOnClickListener((view)->{
-            accTextForResult.launch(
-                    new Intent(getContext(), CameraTextActivity.class)
-            );
-        });
-        passCam.setOnClickListener((view)->{
-            passTextForResult.launch(
-                    new Intent(getContext(), CameraTextActivity.class)
-            );
-        });
+        appCam.setOnClickListener((view)-> appTextForResult.launch(
+                new Intent(getContext(), CameraTextActivity.class)
+        ));
+        accCam.setOnClickListener((view)-> accTextForResult.launch(
+                new Intent(getContext(), CameraTextActivity.class)
+        ));
+        passCam.setOnClickListener((view)-> passTextForResult.launch(
+                new Intent(getContext(), CameraTextActivity.class)
+        ));
 
-        submit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //string values for input fields
-                String acc = inp1.getText().toString();
-                String apw = inp2.getText().toString();
+        submit.setOnClickListener(view -> {
+            //string values for input fields
+            String acc = inp1.getText().toString();
+            String apw = inp2.getText().toString();
 
-                //check fields are not empty
-                if(acc.equals("") || apw.equals("") || inp3.getText().toString().equals("")){
-                    Toast.makeText(getContext(),"Fields are Empty !",Toast.LENGTH_LONG).show();
-                    return;
-                }
-                else {
-                    //going to encrypt activity for encrypted password
-                    encryptForResult.launch(
-                        new Intent(getContext(), EncryptActivity.class)
-                        .putExtra("pass", inp3.getText().toString())
-                    );
-                }
+            //check fields are not empty
+            if(acc.equals("") || apw.equals("") || inp3.getText().toString().equals("")){
+                Toast.makeText(getContext(),"Fields are Empty !",Toast.LENGTH_LONG).show();
+            }
+            else {
+                //going to encrypt activity for encrypted password
+                encryptForResult.launch(
+                    new Intent(getContext(), EncryptActivity.class)
+                    .putExtra("pass", inp3.getText().toString())
+                );
             }
         });
 

@@ -2,7 +2,6 @@ package com.maheshtiria.easypass.imageutils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.media.Image;
 
@@ -20,7 +19,7 @@ public class ImageUtil {
         Image inp = image.getImage();
         Rect cropRect = image.getCropRect();
         //bitmap image
-        ByteBuffer buffer = inp.getPlanes()[0].getBuffer();//first plane contain image data
+        ByteBuffer buffer = (inp != null ? inp.getPlanes() : new Image.Plane[0])[0].getBuffer();//first plane contain image data
         byte[] bytes = new byte[buffer.remaining()];//length of data
         buffer.get(bytes);//transfer data into []
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
@@ -32,8 +31,6 @@ public class ImageUtil {
         //finally crop
         bitmap = Bitmap.createBitmap(bitmap,cropRect.left,cropRect.top,cropRect.width(),cropRect.height());
 
-        InputImage img = InputImage.fromBitmap(bitmap,deg);
-
-        return img;
+        return InputImage.fromBitmap(bitmap,deg);
     }
 }

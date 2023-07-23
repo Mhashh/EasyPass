@@ -1,10 +1,5 @@
 package com.maheshtiria.easypass;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +11,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.maheshtiria.easypass.encryption.PassEncrypt;
 
@@ -42,26 +41,21 @@ public class EncryptActivity extends AppCompatActivity {
 
     //register for result from camera activity callback
     passTextForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-      new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
-          if (result.getResultCode() == Activity.RESULT_OK) {
-            Intent intent = result.getData();
-            // Handle the Intent
-            String msg = intent.getStringExtra("surprise");
-            inp.setText(msg);
-            Toast.makeText(getApplicationContext(),msg,Toast.LENGTH_LONG).show();
-          }
+      result -> {
+        if (result.getResultCode() == Activity.RESULT_OK) {
+          Intent intent = result.getData();
+          // Handle the Intent
+          String msg = intent != null ? intent.getStringExtra("surprise") : null;
+          inp.setText(msg);
+          Toast.makeText(getApplicationContext(),msg,Toast.LENGTH_LONG).show();
         }
       });
 
     //sends to camera activity for scanning
     imgcam.setOnClickListener(
-      v->{
-        passTextForResult.launch(
-          new Intent(this, CameraTextActivity.class)
-        );
-      }
+      v-> passTextForResult.launch(
+        new Intent(this, CameraTextActivity.class)
+      )
     );
 
 
