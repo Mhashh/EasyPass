@@ -86,7 +86,6 @@ public class AddNewFragment extends Fragment {
                         // Handle the Intent
                         String msg = intent.getStringExtra("surprise");
                         inp1.setText(msg);
-                        Toast.makeText(getContext(),msg,Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -100,7 +99,6 @@ public class AddNewFragment extends Fragment {
                         // Handle the Intent
                         String msg = intent.getStringExtra("surprise");
                         inp2.setText(msg);
-                        Toast.makeText(getContext(),msg,Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -114,7 +112,6 @@ public class AddNewFragment extends Fragment {
                         // Handle the Intent
                         String msg = intent.getStringExtra("surprise");
                         inp3.setText(msg);
-                        Toast.makeText(getContext(),msg,Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -177,6 +174,10 @@ public class AddNewFragment extends Fragment {
                 }
             }
         );
+
+        inp1.setText("");
+        inp2.setText("");
+        inp3.setText("");
 
     }
 

@@ -46,6 +46,7 @@ public class ListFragment extends Fragment {
     private LiveData<List<Pass>> list;
     PassListAdapter pl;
     ActivityResultLauncher<Intent> decryptForResult;
+    View focus;
 
     OnItemClickListener onRecyclerViewItemClicked = new OnItemClickListener() {
         @Override
@@ -56,6 +57,8 @@ public class ListFragment extends Fragment {
                 .putExtra("name",((TextView)v.findViewById(R.id.brand)).getText().toString())
                 .putExtra("encrypt",((TextView)v.findViewById(R.id.password)).getText().toString())
             );
+            focus = v;
+
         }
     };
 
@@ -101,8 +104,9 @@ public class ListFragment extends Fragment {
                       if(authorized){
                           String decrypt = intent.getStringExtra("decrypt");
                           int index = intent.getIntExtra("index",-1);
-                          Log.d("VALUES","decrypt for result "+decrypt);
+
                           pl.showTruePass(index,decrypt);
+                          ((TextView) focus.findViewById(R.id.password)).setVisibility(View.VISIBLE);
                       }
                       else{
                           Toast.makeText(getContext(),"Not Authorized !",Toast.LENGTH_LONG).show();

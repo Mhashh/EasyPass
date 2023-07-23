@@ -82,9 +82,8 @@ public class CameraTextActivity extends AppCompatActivity {
 
         // Request camera permissions
         if (!allPermissionsGranted()) {
-            String[] requiredPermissions = new String[2];
+            String[] requiredPermissions = new String[1];
             requiredPermissions[0] = Manifest.permission.CAMERA;
-            requiredPermissions[1] = Manifest.permission.WRITE_EXTERNAL_STORAGE;
             ActivityCompat.requestPermissions(
                     this,requiredPermissions , CameraTextActivity.CAMERA_REQUEST);
 
@@ -194,8 +193,6 @@ public class CameraTextActivity extends AppCompatActivity {
 
     private boolean allPermissionsGranted() {
         boolean granted = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) ==
-                PackageManager.PERMISSION_GRANTED;
-        granted = granted && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
                 PackageManager.PERMISSION_GRANTED;
         return granted;
     }
