@@ -8,4 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="view_port_color">#A4000000</color>
+    <color name="text_view_color_night">#65FF6C</color>
+    <color name="text_view_color_day">#005704</color>
+    <color name="night_primary">#008C06</color>
+    <color name="day_primary">#18FF6C</color>
 </resources>

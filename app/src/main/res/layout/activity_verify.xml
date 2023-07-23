@@ -7,14 +7,16 @@
     tools:context=".FirstUsageActivity">
 
     <EditText
+        android:autofillHints="password"
         android:id="@+id/masterkey"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="54dp"
         android:layout_marginStart="36dp"
         android:layout_marginTop="288dp"
         android:layout_marginEnd="75dp"
-        android:hint="Main Password"
-        android:textSize="25sp"
+        android:hint="@string/inp_main_password"
+        android:inputType="textPassword"
+        android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.445"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
         android:layout_marginEnd="28dp"
-        android:contentDescription="opens camera to scan text for account name"
+        android:contentDescription="@+/btn_img_cam"
         android:src="@android:drawable/ic_menu_camera"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -42,7 +44,7 @@
         android:layout_marginStart="162dp"
         android:layout_marginTop="100dp"
         android:layout_marginEnd="162dp"
-        android:text="Verify"
+        android:text="@string/btn_verify"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/masterkey" />

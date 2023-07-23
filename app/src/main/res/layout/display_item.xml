@@ -10,40 +10,43 @@
     android:layout_marginBottom="@dimen/item_margin">
 
     <TextView
-        android:id="@+id/brand"
-        android:layout_width="@dimen/width_brand"
+        android:id="@+id/account"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="3dp"
+        android:layout_marginStart="4dp"
         android:padding="@dimen/p_text"
         android:textSize="@dimen/font_acc"
-        app:layout_constraintEnd_toStartOf="@+id/account"
+        app:layout_constraintBottom_toTopOf="@+id/brand"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+
         tools:text="TextView" />
 
     <TextView
-        android:id="@+id/account"
-        android:layout_width="@dimen/width_account"
+        android:id="@+id/brand"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="@dimen/p_text"
-        android:textSize="@dimen/font_acc"
-        app:layout_constraintStart_toEndOf="@+id/brand"
-        app:layout_constraintTop_toTopOf="parent"
+        android:textSize="@dimen/font_brand"
+        app:layout_constraintBottom_toTopOf="@+id/password"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.014"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/account"
         tools:text="TextView" />
 
     <TextView
         android:id="@+id/password"
-        android:textColor="@color/white"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="3dp"
-        android:background="@drawable/pswd_design"
+        android:layout_marginStart="4dp"
         android:padding="@dimen/padding_password"
         android:textSize="@dimen/font_password"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/account"
-        app:layout_constraintVertical_bias="0.0"
+        app:layout_constraintTop_toBottomOf="@+id/brand"
+        app:layout_constraintVertical_bias="1.0"
+        android:visibility="gone"
         tools:text="TextView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,6 +6,6 @@
     android:viewportHeight="108">
     <path
         android:pathData="M0,108L108,108"
-        android:strokeColor="@color/text_view_color_night"
+        android:strokeColor="@color/text_view_color_day"
         android:strokeWidth="2"/>
 </vector>

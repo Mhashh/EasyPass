@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="text_view_day" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">#005E04</item>
+    </style>
+    <style name="text_view_night" parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/text_view_color_night</item>
+    </style>
+    <style name="text_view_day." parent="Widget.AppCompat.TextView">
+        <item name="android:textColor">@color/text_view_color_day</item>
+    </style>
+    <style name="action_bar_night" parent="Widget.AppCompat.ActionBar.Solid">
+        <item name="background">@color/night_primary</item>
+    </style>
+    <style name="button_night" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/button_design_night</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:paddingLeft">20dp</item>
+        <item name="android:paddingRight">20dp</item>
+    </style>
+    <style name="button_day" parent="Widget.AppCompat.Button">
+        <item name="android:background">@drawable/button_design_day</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:paddingLeft">20dp</item>
+        <item name="android:paddingRight">20dp</item>
+    </style>
+    <style name="edit_text_night" parent="Widget.AppCompat.EditText">
+        <item name="android:textColor">@color/white</item>
+    </style>
+
+    <style name="bottom_navigation_day">
+        <item name="android:background">@color/cardview_light_background</item>
+        <item name="android:color">@color/day_primary</item>
+    </style>
+
+    <style name="bottom_navigation_night">
+        <item name="android:background">@color/cardview_dark_background</item>
+    </style>
+</resources>
