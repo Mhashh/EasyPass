@@ -17,8 +17,6 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-import java.util.Date;
-
 public class MainActivity extends AppCompatActivity {
 
   ActivityResultLauncher<Intent> verifyForResult;
@@ -48,23 +46,13 @@ public class MainActivity extends AppCompatActivity {
       });
 
     if(!sharedPreferences.contains("auth")){
-      Log.d("VALUES","not here");
-      String auth = new Date().toString();
       Intent intent = new Intent(this, FirstUsageActivity.class);
-      intent.putExtra("auth",auth);
       startActivity(intent);
     }
     else{
-      Log.d("VALUES","Correct place");
-      String ivString = sharedPreferences.getString("iv","");
-      Log.d("VALUES",ivString);
-      byte[] iv = ivString.getBytes();
       verifyForResult.launch(
         new Intent(getApplicationContext(), VerifyActivity.class)
           .putExtra("auth",sharedPreferences.getString("auth",""))
-          .putExtra("salt",sharedPreferences.getString("salt",""))
-          .putExtra("encrypt",sharedPreferences.getString("encryt",""))
-          .putExtra("iv",iv)
       );
     }
 
@@ -73,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     NavController navController;
     if (navHostFragment != null) {
       navController = navHostFragment.getNavController();
-      BottomNavigationView bv = (BottomNavigationView)findViewById(R.id.nav_bar);
+      BottomNavigationView bv = findViewById(R.id.nav_bar);
       NavigationUI.setupWithNavController(bv,navController);
 
     }

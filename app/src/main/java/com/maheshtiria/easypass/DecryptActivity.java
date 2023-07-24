@@ -62,14 +62,11 @@ public class DecryptActivity extends AppCompatActivity {
     button.setOnClickListener((view)->{
 
       //userauth password
-      String authencrypt = sharedPreferences.getString("encryt","");
       String auth = sharedPreferences.getString("auth","");
-      String authsalt = sharedPreferences.getString("salt","");
-      String authiv = sharedPreferences.getString("iv","");
 
-      String authdecrypt = PassEncrypt.decryptAuth(authencrypt,inp.getText().toString(),authsalt,new IvParameterSpec(authiv.getBytes()));
+      boolean authorized = PassEncrypt.verifyMainPassword(inp.getText().toString(),auth);
 
-      if(authdecrypt.equals(auth)){
+      if(authorized){
         String encrypt = this.getIntent().getStringExtra("encrypt");
         String name = this.getIntent().getStringExtra("name");
         int index = this.getIntent().getIntExtra("index",-1);

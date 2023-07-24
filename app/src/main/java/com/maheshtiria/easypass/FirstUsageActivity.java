@@ -11,10 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.maheshtiria.easypass.encryption.PassEncrypt;
 
-import java.util.Date;
 import java.util.Objects;
-
-import javax.crypto.spec.IvParameterSpec;
 
 public class FirstUsageActivity extends AppCompatActivity {
   EditText pass;
@@ -29,7 +26,7 @@ public class FirstUsageActivity extends AppCompatActivity {
     if(sharedPreferences.contains("auth")){
       finish();
     }
-    String auth = getIntent().getStringExtra("auth");
+
     pass = findViewById(R.id.inputpassword);
     confirm = findViewById(R.id.confirmpassword);
     save = findViewById(R.id.save);
@@ -37,17 +34,12 @@ public class FirstUsageActivity extends AppCompatActivity {
     save.setOnClickListener(v -> {
       String password = pass.getText().toString();
       String reenter = confirm.getText().toString();
-      String salt = String.valueOf(new Date().getTime());
 
       if(password.equals(reenter)){
-        IvParameterSpec iv = PassEncrypt.generateIv();
-        String encrypted = PassEncrypt.storeEncryptAuth(auth,password,salt,iv);
-        if(!Objects.equals(encrypted, "")){
+        String auth = PassEncrypt.hashDigest(password);
+        if(!Objects.equals(auth, "")){
           if(sharedPreferences.edit()
             .putString("auth",auth)
-            .putString("encryt",encrypted)
-            .putString("salt",salt)
-            .putString("iv",new String(iv.getIV()))
             .commit()){
             finish();
           }

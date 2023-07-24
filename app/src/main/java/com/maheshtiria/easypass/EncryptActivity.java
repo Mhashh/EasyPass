@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -62,13 +61,10 @@ public class EncryptActivity extends AppCompatActivity {
     button.setOnClickListener((view)->{
 
       //userauth password
-      String authencrypt = sharedPreferences.getString("encryt","");
       String auth = sharedPreferences.getString("auth","");
-      String authsalt = sharedPreferences.getString("salt","");
-      String authiv = sharedPreferences.getString("iv","");
-      Log.d("VALUES","encryptAct : "+authencrypt+"  "+auth+"  "+authsalt+"  "+authiv);
-      String authdecrypt = PassEncrypt.decryptAuth(authencrypt,inp.getText().toString(),authsalt,new IvParameterSpec(authiv.getBytes()));
-      if(authdecrypt.equals(auth)){
+      boolean authorized = PassEncrypt.verifyMainPassword(inp.getText().toString(),auth);
+
+      if(authorized){
 
         String pass = this.getIntent().getStringExtra("pass");
 

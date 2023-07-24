@@ -1,7 +1,9 @@
 package com.maheshtiria.easypass.encryption;
 
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -71,5 +73,20 @@ public class PassEncrypt {
     catch (Exception e){
       return "";
     }
+  }
+  public static String hashDigest(String input){
+    try {
+      byte[] inputBytes = input.getBytes(StandardCharsets.UTF_8);
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
+      byte[] digest = md.digest(inputBytes);
+      return new String(digest);
+    }catch (Exception e){
+      return "";
+    }
+  }
+
+  public static boolean verifyMainPassword(String input,String shouldBeOutput){
+    String digestStr = hashDigest(input);
+    return digestStr.equals(shouldBeOutput);
   }
 }
