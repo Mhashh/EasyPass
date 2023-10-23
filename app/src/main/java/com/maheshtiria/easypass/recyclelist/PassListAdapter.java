@@ -2,12 +2,18 @@ package com.maheshtiria.easypass.recyclelist;
 
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
@@ -15,6 +21,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.maheshtiria.easypass.R;
 import com.maheshtiria.easypass.database.Pass;
+import com.maheshtiria.easypass.database.PassDao;
+import com.maheshtiria.easypass.database.Pdb;
 import com.maheshtiria.easypass.fragments.OnItemClickListener;
 
 import java.util.ArrayList;
@@ -24,6 +32,7 @@ public class PassListAdapter extends RecyclerView.Adapter<PassListAdapter.ViewHo
 
   private final ArrayList<Pass> passes=new ArrayList<>();
   OnItemClickListener itemClickListener;
+
   /**
    * Provide a reference to the type of views that you are using
    * (custom ViewHolder)
@@ -33,6 +42,8 @@ public class PassListAdapter extends RecyclerView.Adapter<PassListAdapter.ViewHo
     private final TextView acc;
     private final TextView pswd;
 
+
+
     ActivityResultLauncher<Intent> decryptForResult;
     public ViewHolder(View view) {
       super(view);
@@ -40,6 +51,50 @@ public class PassListAdapter extends RecyclerView.Adapter<PassListAdapter.ViewHo
       comp = view.findViewById(R.id.brand);
       acc = view.findViewById(R.id.account);
       pswd = view.findViewById(R.id.password);
+
+      comp.setOnLongClickListener(v -> {
+        PopupMenu popup = new PopupMenu(v.getContext(), v);
+        popup.getMenuInflater().inflate(R.menu.actions, popup.getMenu());
+        popup.show();
+
+        popup.setOnMenuItemClickListener(item -> {
+          if (item.getItemId() == R.id.delete_this) {//Alert box before delete
+            AlertDialog.Builder sureDelete = new AlertDialog.Builder(pswd.getContext());
+
+            sureDelete.setCancelable(true);
+            sureDelete.setMessage("Do you want to delete this password?");
+            sureDelete.setTitle("Delete");
+
+            sureDelete.setPositiveButton("Yes", (dialog, which) -> {
+              //Database variables
+              Pdb dbInstance = Pdb.getDb(pswd.getContext());
+              PassDao pd = dbInstance.passDao();
+              //deleting from database
+              dbInstance.getQueryExecutor().execute(
+                () -> {
+                  try {
+                    pd.delete(comp.getText().toString());
+                    Looper.prepare();
+                    Toast.makeText(pswd.getContext(), "Successfully deleted the account !", Toast.LENGTH_LONG).show();
+
+                  } catch (Exception e) {
+                    Looper.prepare();
+                    Toast.makeText(pswd.getContext(), "Error in deleting data!", Toast.LENGTH_LONG).show();
+
+                  }
+                }
+              );
+            });
+
+            sureDelete.setNegativeButton("No", (dialog, which) -> dialog.cancel());
+
+            sureDelete.show();
+            return true;
+          }
+          return false;
+        });
+        return true;
+      });
 
 
 

@@ -13,4 +13,6 @@
     <string name="btn_verify">Verify</string>
     <string name="inp_reenter_password">Reenter Password</string>
     <string name="btn_save_password">Save Password</string>
+  <string name="change">change</string>
+    <string name="delete">delete</string>
 </resources>

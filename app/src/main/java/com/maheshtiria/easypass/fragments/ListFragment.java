@@ -66,6 +66,8 @@ public class ListFragment extends Fragment {
       ()->{
         try{
           list = pd.getAll();
+          Looper.prepare();
+          Toast.makeText(getContext(), "Loaded the data!", Toast.LENGTH_LONG).show();
         }catch(Exception e){
           Looper.prepare();
           Toast.makeText(getContext(),"Error in loading data!",Toast.LENGTH_LONG).show();
@@ -114,8 +116,8 @@ public class ListFragment extends Fragment {
     RecyclerView rv = rootview.findViewById(R.id.rcview);
     rv.setLayoutManager(llm);
     rv.setItemAnimator(new DefaultItemAnimator());
-    rv.setAdapter(pl);
 
+    rv.setAdapter(pl);
 
 
     list.observe(getViewLifecycleOwner(), passes -> pl.submitList(passes));
