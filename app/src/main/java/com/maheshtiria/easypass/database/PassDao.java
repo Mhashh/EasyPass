@@ -25,4 +25,7 @@ public interface PassDao {
   @Query("UPDATE pass SET pass = :newpass WHERE accname = :name")
   void update(String name,String newpass) throws Exception;
 
+  @Query("DELETE FROM pass WHERE appname= :name")
+  void delete(String name) throws Exception;
+
 }
